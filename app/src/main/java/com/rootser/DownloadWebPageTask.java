@@ -18,7 +18,7 @@ import roboguice.inject.InjectView;
  * Created by john on 4/29/14.
  */
 public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
-    @InjectView(R.id.text1)
+    @InjectView(R.id.downloadStatusText)
     TextView downloadStatus;
     private String DEBUG_TAG="DownloadWebPageTask";
     @Override

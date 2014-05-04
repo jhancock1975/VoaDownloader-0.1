@@ -12,17 +12,17 @@ import roboguice.inject.InjectView;
 
 
 public class MainActivity extends RoboActivity {
-    @InjectView(R.id.text1)
-    TextView textView;
-    @InjectResource(R.string.hello_guice)
-    String helloStr;
+    @InjectView(R.id.downloadStatusText)
+    private TextView textView;
+    @InjectResource(R.string.ready)
+    private String readyStr;
     @InjectView(R.id.downloadButton)
-    Button downloadButton;
+    private Button downloadButton;
     @Inject
     DownloadButtonClickListener downloadButtonClickListener;
 
     private void setupControls(){
-        textView.setText(helloStr);
+        textView.setText(readyStr);
         downloadButton.setOnClickListener(downloadButtonClickListener);
     }
     @Override
