@@ -8,4 +8,6 @@
     <string name="downloadButtonText">Download</string>
     <string name="title_activity_network_manager_test">NetworkManagerTest</string>
     <string name="downloading">downloading</string>
+    <string name="io_exception">io_exception</string>
+    <string name="unknown">unknown</string>
 </resources>

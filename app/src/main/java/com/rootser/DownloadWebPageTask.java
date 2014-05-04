@@ -21,6 +21,7 @@ public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
     @InjectView(R.id.downloadStatusText)
     TextView downloadStatus;
     private String DEBUG_TAG="DownloadWebPageTask";
+
     @Override
     protected String doInBackground(String... urls) {
         // params comes from the execute() call: params[0] is the url.
