@@ -1,8 +1,10 @@
-package com.rootser;
+package com.rootser.service;
 
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
+
+import com.rootser.R;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,8 +76,8 @@ public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
             throws IOException, UnsupportedEncodingException {
 
         byte[] buffer = new byte[1024];
-        File SDCardRoot = new File("/storage/emulated/0/Download");
-        File file = new File(SDCardRoot, "mand2200a.mp3");
+        File downloadedFilesDir = new File("/storage/emulated/0/Download");
+        File file = new File(downloadedFilesDir, "mand2200a.mp3");
         FileOutputStream fileOutput = new FileOutputStream(file);
         int downloadedSize = 0;
         int bufferLength = 0; // used to store a temporary size of the

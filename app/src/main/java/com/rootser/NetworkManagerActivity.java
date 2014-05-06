@@ -12,6 +12,7 @@ import roboguice.activity.RoboActivity;
 public class NetworkManagerActivity extends RoboActivity {
     private Boolean networkAvailable = null;
 
+
     public Boolean isNetworkAvailable() {
         if (networkAvailable == null) {
             ConnectivityManager connMgr =

@@ -4,6 +4,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.inject.Inject;
+import com.rootser.service.DownloadWebPageTask;
 
 import roboguice.inject.InjectView;
 
@@ -16,15 +17,15 @@ public class DownloadButtonClickListener  implements View.OnClickListener {
     @Inject
     private DownloadWebPageTask downloadTask;
     @Inject
-    private NetworkManagerActivity networkManagerActivity;
+    private NetworkStatus networkStatus;
     @Override
     public void onClick(View view) {
-        if (networkManagerActivity.isNetworkAvailable()) {
+        if (networkStatus.isNetworkAvailable()){
             textView.setText(R.string.downloading);
             downloadTask
                     .execute("http://www.voanews.com/mp3/voa/eap/mand/mand2200a.mp3");
         } else {
-            textView.setText("No network connection available.");
+            textView.setText(R.string.network_not_available);
         }
     }
 }
