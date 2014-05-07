@@ -1,9 +1,12 @@
 package com.rootser.service;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.google.inject.Inject;
 import com.rootser.R;
 
 import java.io.File;
@@ -14,6 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import roboguice.inject.InjectResource;
 import roboguice.inject.InjectView;
 
 /**
@@ -22,16 +26,29 @@ import roboguice.inject.InjectView;
 public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
     @InjectView(R.id.downloadStatusText)
     TextView downloadStatus;
-    private String DEBUG_TAG="DownloadWebPageTask";
+    private String DEBUG_TAG = "DownloadWebPageTask";
+    @InjectResource(R.string.network_not_available)
+    String no_network;
+    @InjectResource(R.string.file_not_available)
+    String no_file;
+    @Inject
+    ConnectivityManager connMgr;
 
     @Override
     protected String doInBackground(String... urls) {
         // params comes from the execute() call: params[0] is the url.
-        try {
-            return downloadUrl(urls[0]);
-        } catch (IOException e) {
-            return "Unable to retrieve web page. URL may be invalid.";
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        String result;
+        if (networkInfo != null && networkInfo.isConnected()) {
+            try {
+                return downloadUrl(urls[0]);
+            } catch (IOException e) {
+                result = no_file + urls[0];
+            }
+        } else {
+            result = no_network;
         }
+        return result;
     }
 
     // onPostExecute displays the results of the AsyncTask.
@@ -42,7 +59,6 @@ public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
 
     private String downloadUrl(String myurl) throws IOException {
         InputStream is = null;
-
 
         try {
             URL url = new URL(myurl);

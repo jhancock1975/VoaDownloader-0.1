@@ -10,7 +10,7 @@ import junit.framework.TestSuite;
  */
 public class AllTests extends TestSuite {
     public static Test suite() {
-        Class[] tests = new Class[] {MainActivityTest.class, MainActivityNetworkTest.class};
+        Class[] tests = new Class[] {MainActivityTest.class};
         return new TestSuiteBuilder(AllTests.class)
                 .includeAllPackagesUnderHere()
                 .build();
