@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources><item name="downloadStatusText" type="id">Guice</item></resources>
+<resources><item name="downloadStatusText" type="id">Guice</item>
+    <item name="main_activity_url_rsrc_bundle_key" type="id">main_activity_urls</item>
+    <item name="main_activity_dest_dir_key" type="id">destination directory</item>
+    <item name="dest_file_key" type="id">destination file</item>
+</resources>

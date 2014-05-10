@@ -6,7 +6,6 @@ package com.rootser.service;
  */
 public class URLs {
     private  String VOA_6_7_MANDARIN="http://www.voanews.com/mp3/voa/eap/mand/mand2200a.mp3";
-
     public String[] getUrls() {
         return new String[] {VOA_6_7_MANDARIN};
     }

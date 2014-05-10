@@ -61,6 +61,7 @@ public class DownloadWebPageTask extends AsyncTask<String, Void, DownloadMessage
     @Override
     protected void onPostExecute(DownloadMessage result) {
         callingService.displayNotification();
+
     }
 
     private DownloadStatus downloadUrl(String myurl) throws IOException {

@@ -18,19 +18,10 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-
         mMainActivity = getActivity();
-        downloadStatusText = (TextView) mMainActivity.findViewById(R.id.downloadStatusText);
     }
 
     public void testPreconditions() {
         assertNotNull("mMainActivity is null", mMainActivity);
-        assertNotNull("downloadStatusText is null", downloadStatusText);
-    }
-
-    public void testMyFirstTestTextView_labelText() {
-        final String expected = mMainActivity.getString(R.string.ready);
-        final String actual = downloadStatusText.getText().toString();
-        assertEquals("downloadStatusText contains wrong text", expected, actual);
     }
 }
