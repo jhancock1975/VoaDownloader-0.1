@@ -12,4 +12,6 @@
     <string name="unknown">unknown</string>
     <string name="network_not_available">Network Not Available</string>
     <string name="file_not_available">Unable to retrieve URL:</string>
+    <string name="complete">complete</string>
+    <string name="ready_again">Ready Again</string>
 </resources>

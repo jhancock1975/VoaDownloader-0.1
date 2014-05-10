@@ -4,9 +4,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.google.inject.Inject;
+import com.rootser.DownloadMessage;
+import com.rootser.DownloadStatus;
 import com.rootser.R;
 
 import java.io.File;
@@ -18,48 +19,53 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import roboguice.inject.InjectResource;
-import roboguice.inject.InjectView;
 
 /**
  * Created by john on 4/29/14.
  */
-public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
-    @InjectView(R.id.downloadStatusText)
-    TextView downloadStatus;
+public class DownloadWebPageTask extends AsyncTask<String, Void, DownloadMessage> {
+
     private String DEBUG_TAG = "DownloadWebPageTask";
     @InjectResource(R.string.network_not_available)
     String no_network;
     @InjectResource(R.string.file_not_available)
     String no_file;
     @Inject
-    ConnectivityManager connMgr;
+    private ConnectivityManager connMgr;
+    @Inject
+    private DownloadMessage result;
+
+    private DownloadService callingService;
+
+    public void setCallingService(DownloadService callingService) {
+        this.callingService = callingService;
+    }
 
     @Override
-    protected String doInBackground(String... urls) {
+    protected DownloadMessage doInBackground(String... urls) {
         // params comes from the execute() call: params[0] is the url.
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        String result;
         if (networkInfo != null && networkInfo.isConnected()) {
             try {
-                return downloadUrl(urls[0]);
+                result.setStatus(downloadUrl(urls[0]));
             } catch (IOException e) {
-                result = no_file + urls[0];
+                result.setStatus(DownloadStatus.IO_EXCEPTION);
             }
         } else {
-            result = no_network;
+            result.setStatus(DownloadStatus.NO_NETWORK);
         }
         return result;
     }
 
     // onPostExecute displays the results of the AsyncTask.
     @Override
-    protected void onPostExecute(String result) {
-        downloadStatus.setText(result);
+    protected void onPostExecute(DownloadMessage result) {
+        callingService.displayNotification();
     }
 
-    private String downloadUrl(String myurl) throws IOException {
+    private DownloadStatus downloadUrl(String myurl) throws IOException {
         InputStream is = null;
-
+        DownloadStatus status;
         try {
             URL url = new URL(myurl);
             HttpURLConnection conn = (HttpURLConnection) url
@@ -68,23 +74,33 @@ public class DownloadWebPageTask extends AsyncTask<String, Void, String> {
             conn.setConnectTimeout(15000 /* milliseconds */);
             conn.setRequestMethod("GET");
             conn.setDoInput(true);
-            // Starts the query
             conn.connect();
             int response = conn.getResponseCode();
             Log.d(DEBUG_TAG, "The response is: " + response);
             is = conn.getInputStream();
 
-            // Convert the InputStream into a string
-            String contentAsString = readIt(is, conn.getContentLength());
-            return contentAsString;
 
-            // Makes sure that the InputStream is closed after the app is
-            // finished using it.
+            byte[] buffer = new byte[1024];
+            File downloadedFilesDir = new File("/storage/emulated/0/Download");
+            File file = new File(downloadedFilesDir, "mand2200a.mp3");
+            FileOutputStream fileOutput = new FileOutputStream(file);
+            int downloadedSize = 0;
+            int bufferLength = 0;
+            int totalSize = conn.getContentLength();
+            while ((bufferLength = is.read(buffer)) > 0) {
+                fileOutput.write(buffer, 0, bufferLength);
+                downloadedSize += bufferLength;
+                if (totalSize != 0 && totalSize != R.integer.NOT_SET) {
+                    int progress = (int) (downloadedSize * 100 / totalSize);
+                }
+            }
+            fileOutput.close();
         } finally {
             if (is != null) {
                 is.close();
             }
         }
+        return DownloadStatus.COMPLETE;
     }
 
     // Reads an InputStream and converts it to a String.
