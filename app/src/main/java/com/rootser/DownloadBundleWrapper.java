@@ -10,7 +10,7 @@ import roboguice.inject.InjectResource;
 /**
  * Created by john on 5/10/14.
  */
-public class DownloadIntentWrapper {
+public class DownloadBundleWrapper {
     Bundle bundle;
     @InjectResource(R.id.main_activity_url_rsrc_bundle_key)
     private String urlBundleKey;
@@ -20,9 +20,13 @@ public class DownloadIntentWrapper {
     private String destFileNameKey;
     @Inject
     private URLs urls;
-    DownloadIntentWrapper(){
+    DownloadBundleWrapper(){
         bundle = new Bundle();
         bundle.putStringArray(urlBundleKey, urls.getUrls());
-        bundle.putString(destDirNameKey, )
+        bundle.putString(destDirNameKey, "/storage/emulated/0/Download");
+        bundle.putString(destFileNameKey, "mand2200a.mp3");
+    }
+    public Bundle getBundle(){
+        return bundle;
     }
 }

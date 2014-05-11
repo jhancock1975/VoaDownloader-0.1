@@ -25,8 +25,10 @@ public class MainActivity extends RoboActivity {
     private String destDirNameKey;
     @InjectResource(R.id.dest_file_key)
     private String destFileNameKey;
-
     @Inject
+    private DownloadBundleWrapper bundleWrapper;
+    @InjectResource(R.id.main_activity_bundle_name_key)
+    private String bundleNameKey;
     private URLs urls;
     private void setupControls(){
         downloadButton.setOnClickListener(new DownloadButtonClickListener());
@@ -45,7 +47,7 @@ public class MainActivity extends RoboActivity {
 
         intent.putExtra(urlBundleKey, urls.getUrls());
         intent.putExtra(destDirNameKey, "/storage/emulated/0/Download");
-        intent.putExtra()
+        intent.putExtras(bundleWrapper.getBundle());
         startService(intent);
     }
 

@@ -3,4 +3,5 @@
     <item name="main_activity_url_rsrc_bundle_key" type="id">main_activity_urls</item>
     <item name="main_activity_dest_dir_key" type="id">destination directory</item>
     <item name="dest_file_key" type="id">destination file</item>
+    <item name="main_activity_bundle_name_key" type="id">main activity download bundle</item>
 </resources>

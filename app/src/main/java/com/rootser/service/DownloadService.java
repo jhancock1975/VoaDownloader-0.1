@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -52,6 +53,8 @@ public class DownloadService extends RoboIntentService {
     private String downloadDestDirKey;
     @InjectResource(R.id.dest_file_key)
     private String downloadFileNameKey;
+    @InjectResource(R.id.main_activity_bundle_name_key)
+    private String bundleNameKey;
     private ArrayList<String> fileMessages;
     private final static String DEBUG_TAG = "DownloadWebPageTask";
     public DownloadService() {
@@ -63,18 +66,19 @@ public class DownloadService extends RoboIntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        String[] urls = (String[] ) intent.getStringArrayExtra(urlBundleKey);
+        Bundle bundle = intent.getExtras();
+        String[] urls = bundle.getStringArray(urlBundleKey);
+        String dirName = bundle.getString(downloadDestDirKey);
+        String fileName = bundle.getString(downloadFileNameKey);
         synchronized (this) {
-            //downloadTask.setCallingService(this);
-
             for (String url : urls) {
                downloadTask.execute(url);
                 networkInfo = connMgr.getActiveNetworkInfo();
                 if (networkInfo != null && networkInfo.isConnected()) {
                     try {
                         fileMessages.add(downloadUrl(url,
-                                intent.getStringExtra(downloadDestDirKey),
-                                intent.getStringExtra(downloadFileNameKey)));
+                                dirName,
+                                fileName));
                     } catch(IOException e){
                         msg.setStatus(DownloadStatus.IO_EXCEPTION);
                     }
