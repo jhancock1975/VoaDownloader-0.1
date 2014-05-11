@@ -37,8 +37,6 @@ import roboguice.service.RoboIntentService;
 public class DownloadService extends RoboIntentService {
 
     @Inject
-    private DownloadWebPageTask downloadTask;
-    @Inject
     private ConnectivityManager connMgr;
     private NetworkInfo networkInfo;
     @Inject
@@ -72,7 +70,6 @@ public class DownloadService extends RoboIntentService {
         String fileName = bundle.getString(downloadFileNameKey);
         synchronized (this) {
             for (String url : urls) {
-               downloadTask.execute(url);
                 networkInfo = connMgr.getActiveNetworkInfo();
                 if (networkInfo != null && networkInfo.isConnected()) {
                     try {

@@ -22,6 +22,13 @@ public class DownloadServiceTest extends ServiceTestCase {
         super(DownloadService.class);
     }
 
+    /**
+     * this test tests the DownloadService
+     * which expects an intent with a destination
+     * directory, file name, and url, the contents of which
+     * will be stored to a file
+     * @throws InterruptedException
+     */
     public void test() throws InterruptedException {
 
         TestURLs testUrls = new TestURLs();
@@ -36,34 +43,26 @@ public class DownloadServiceTest extends ServiceTestCase {
         DownloadService downloadService;
         Intent intent = new Intent(getContext(), DownloadService.class);
         intent.putExtras(bundle);
+        //I'm saving the start time here to compare wtih file create time
         long startTestTime = System.currentTimeMillis();
         startService(intent);
         boolean fileDownloaded = false;
         boolean testComplete = false;
         File testFile = new File (testDirName + "/" + testFileName);
+        testFile.delete();
         int loopCount = 0;
         int maxIterations = 60;
         while ( ! testComplete){
-            fileDownloaded = testFile.exists() && (testFile.lastModified() > startTestTime);
+            fileDownloaded = testFile.exists();
+            //seems like, when running (as opposed to debugging) this code
+            //file create times are rounded down to the nearest second
+            Log.wtf("DownloadServiceTest" ,
+                    "file " + testFile.lastModified() + " start " + startTestTime);
             testComplete = fileDownloaded || loopCount > maxIterations;
-            try {
-                /*
-                 this is here because this test
-                 fails if we try to use Thread.sleep() here
-                 it might have something to do with there being
-                 a synchronized block in the service we are testing.
-                 I am not seing any error logged in logcat, but
-                 the console reports a null pointer exception.
-                 */
-               this.wait(1000);
-            } catch(Exception e){
-                e.printStackTrace();;
-                Log.d("download service test", "message " + e.getMessage());
-                Log.d("download service test", "cause " + e.getCause());
-            }
+            Thread.sleep(1000);
             loopCount++;
         }
-        assertTrue("it took too long to try and download the file " ,
+        assertTrue("it took too long to try and download the file" ,
                 fileDownloaded && (loopCount < maxIterations));
     }
 }
