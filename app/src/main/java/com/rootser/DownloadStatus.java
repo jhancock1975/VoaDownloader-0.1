@@ -1,24 +1,24 @@
 package com.rootser;
 
+import com.google.inject.Singleton;
+
+import roboguice.inject.InjectResource;
+
 /**
  * Created by john on 5/3/14.
  */
-public enum DownloadStatus {
-    READY, DOWNLOADING, IO_EXCEPTION, UNKNOWN, NO_NETWORK, COMPLETE;
-    public int toResId(){
-        switch(this){
-            case READY:
-                return R.string.ready;
-            case DOWNLOADING:
-                return R.string.downloading;
-            case IO_EXCEPTION:
-                return R.string.io_exception;
-            case NO_NETWORK:
-                return R.string.network_not_available;
-            case COMPLETE:
-                return R.string.complete;
-            default:
-                return R.string.unknown;
-        }
-    }
+@Singleton
+public class DownloadStatus {
+    @InjectResource(R.string.ready)
+    public String readyStr;
+    @InjectResource(R.string.downloading)
+    public String downloadingStr;
+    @InjectResource(R.string.io_exception)
+    public String ioExceptionStr;
+    @InjectResource(R.string.network_not_available)
+    public String noNetStr;
+    @InjectResource(R.string.unknown)
+    public String unkStr;
+    @InjectResource(R.string.complete)
+    public String completeStr;
 }

@@ -8,7 +8,9 @@ import android.widget.TextView;
 
 import com.google.inject.Inject;
 import com.rootser.service.DownloadService;
-import com.rootser.service.URLs;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import roboguice.activity.RoboActivity;
 import roboguice.inject.InjectResource;
@@ -21,15 +23,13 @@ public class MainActivity extends RoboActivity {
     private Button downloadButton;
 
     @Inject
-    private DownloadInfo bundleWrapper;
+    private DownloadInfo info;
 
     @InjectResource(R.string.download_info_intent_key)
     private String downloadInfoIntentKey;
 
-    private URLs urls;
     private void setupControls(){
         downloadButton.setOnClickListener(new DownloadButtonClickListener());
-
     }
 
     @Override
@@ -41,7 +41,9 @@ public class MainActivity extends RoboActivity {
 
     public void startIntentService(){
         Intent intent = new Intent(this, DownloadService.class);
-        intent.putExtra(downloadInfoIntentKey, bundleWrapper);
+        List<DownloadInfoInf> infoList = new ArrayList<DownloadInfoInf>();
+        infoList.add(info);
+        intent.putExtra(downloadInfoIntentKey, (ArrayList<DownloadInfoInf>) infoList);
         startService(intent);
     }
 

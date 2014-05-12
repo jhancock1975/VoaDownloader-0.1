@@ -13,8 +13,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.inject.Inject;
-import com.rootser.DownloadInfo;
-import com.rootser.DownloadMessage;
+import com.rootser.DownloadInfoInf;
 import com.rootser.DownloadStatus;
 import com.rootser.MainActivity;
 import com.rootser.R;
@@ -24,8 +23,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 import roboguice.inject.InjectResource;
 import roboguice.service.RoboIntentService;
@@ -40,49 +41,40 @@ public class DownloadService extends RoboIntentService {
     private ConnectivityManager connMgr;
     private NetworkInfo networkInfo;
 
-    @Inject
-    private DownloadMessage msg;
-
-    @InjectResource(R.string.notificationBigContentTitle)
-    private String bigContentTitle;
-
-    @InjectResource(R.string.app_name)
-    private String notificationTitle;
-
     @InjectResource(R.string.download_info_intent_key)
     private String downloadInfoIntentKey;
 
-    private ArrayList<String> fileMessages;
+    @Inject
+    private DownloadStatus downloadStatus;
+
+    private List<DownloadNoteInfo> fileMessages;
     private final static String DEBUG_TAG = DownloadService.class.getName();
 
     public DownloadService() {
         super("DownloadService");
-        fileMessages = new ArrayList<String>();
+        fileMessages = new ArrayList<DownloadNoteInfo>();
     }
 
     int mId = 0;
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        DownloadInfo downloadInfo = (DownloadInfo)
+        List<DownloadInfoInf> infoList = (List<DownloadInfoInf> )
                 intent.getSerializableExtra(downloadInfoIntentKey);
         synchronized (this) {
-            for (String url : downloadInfo.getUrls().getUrls()) {
+            for (DownloadInfoInf info : infoList) {
                 networkInfo = connMgr.getActiveNetworkInfo();
                 if (networkInfo != null && networkInfo.isConnected()) {
                     try {
-                        fileMessages.add(downloadUrl(url,
-                                downloadInfo.getDestFileDir(),
-                                downloadInfo.getDestFileName()));
+                        fileMessages.add(downloadUrl(info));
                     } catch(IOException e){
-                        msg.setStatus(DownloadStatus.IO_EXCEPTION);
+                        fileMessages.add(getIoExceptionNote(info));
                     }
                 } else {
-                    msg.setStatus(DownloadStatus.NO_NETWORK);
+                    fileMessages.add(getNoNetworkNote(info));
                 }
-                msg.setStatus(DownloadStatus.COMPLETE);
             }try{
-                displayNotification();
+                displayNotification(fileMessages);
             } catch(Exception e){
                 e.printStackTrace();
                 Log.d(DEBUG_TAG, e.getMessage());
@@ -91,21 +83,50 @@ public class DownloadService extends RoboIntentService {
     }
 
     /**
+     * all DownloadNoteInfo objects need file name, url, and time
+     * so code is factorted out here.
+     * @param info
+     * @return
+     */
+    DownloadNoteInfo getFileUrlTime(DownloadInfoInf info){
+        File downloadedFilesDir = new File(info.getDestFileDir());
+        File file = new File(downloadedFilesDir, info.getDestFileName());
+        DownloadNoteInfo dnInfo = new DownloadNoteInfo()
+                .setDownloadTime(System.currentTimeMillis())
+                .setFileName(file.getName());
+        try {
+            URL url = new URL(info.getUrl());
+            dnInfo.setSiteName(url.getHost());
+        } catch(MalformedURLException e){
+            Log.d(DEBUG_TAG, e.getMessage());
+            dnInfo.setSiteName("");
+        } catch(Exception e){
+            Log.d(DEBUG_TAG, e.getMessage());
+            Log.d(DEBUG_TAG, "site name didn't match second_level.top_level domain name pattern.");
+        }
+        return dnInfo;
+    }
+    DownloadNoteInfo getIoExceptionNote(DownloadInfoInf info){
+        return  getFileUrlTime(info).setStatus(downloadStatus.ioExceptionStr);
+    }
+    DownloadNoteInfo getNoNetworkNote(DownloadInfoInf info){
+        return getFileUrlTime(info).setStatus(downloadStatus.noNetStr);
+    }
+    /**
      * this method will download the url at myurl
      * to the file named downloadFileName in the directory downloadedFilesDirName
      *
-     * @param myurl - string holding url to download
-     * @param downloadedFilesDirName - name of directory to save file to
-     * @param downloadFileName - name of file to save to
-     * @return string that is not getting used
+     * @param info - object holding information about what to download
+     *                       and where to store it
+     * @return DownloadNoteInfo object for use with notification
      * @throws IOException
      */
-    private String downloadUrl(String myurl, String downloadedFilesDirName,
-                               String downloadFileName) throws IOException {
+    private DownloadNoteInfo downloadUrl(DownloadInfoInf info) throws IOException {
         InputStream is = null;
-        DownloadStatus status;
+        File file;
+        DownloadNoteInfo dnInfo;
         try {
-            URL url = new URL(myurl);
+            URL url = new URL(info.getUrl());
             HttpURLConnection conn = (HttpURLConnection) url
                     .openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);
@@ -119,8 +140,9 @@ public class DownloadService extends RoboIntentService {
 
 
             byte[] buffer = new byte[1024];
-            File downloadedFilesDir = new File(downloadedFilesDirName);
-            File file = new File(downloadedFilesDir, downloadFileName);
+            File downloadedFilesDir = new File(info.getDestFileDir());
+            file = new File(downloadedFilesDir, info.getDestFileName());
+
             FileOutputStream fileOutput = new FileOutputStream(file);
             int downloadedSize = 0;
             int bufferLength = 0;
@@ -133,39 +155,57 @@ public class DownloadService extends RoboIntentService {
                 }
             }
             fileOutput.close();
+            dnInfo = getFileUrlTime(info)
+                    .setStatus(downloadStatus.completeStr);
         } finally {
             if (is != null) {
                 is.close();
             }
         }
-        String urlEnd = myurl.substring(myurl.lastIndexOf('/'), myurl.length());
-        return urlEnd + DownloadStatus.COMPLETE;
+      return dnInfo;
     }
+
+    /*
+    strings used in displaying notifications
+     */
+    @InjectResource(R.string.notificationBigContentTitle)
+    private String bigContentTitle;
+
+    @InjectResource(R.string.app_name)
+    private String notificationTitle;
+
+    @InjectResource(R.string.note_actions_performed)
+    private String noteActionsPerformed;
+
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void displayNotification() {
+    /**
+     * this method is responsible for displaying
+     * notifications to the user on the results
+     * of the service's attempts to download files
+     * The code below is from
+     * http://developer.android.com/guide/topics/ui/notifiers/notifications.html
+     */
+    public void displayNotification(List<DownloadNoteInfo> fileMessages) {
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.drawable.ic_launcher)
                         .setContentTitle(notificationTitle)
-                        .setContentText(msg.getStatus().toString());
+                        .setContentText(noteActionsPerformed);
+
         NotificationCompat.InboxStyle inboxStyle =
                 new NotificationCompat.InboxStyle();
         inboxStyle.setBigContentTitle(bigContentTitle);
-// Creates an explicit intent for an Activity in your app
-        for (String fileMsg: this.fileMessages){
-            inboxStyle.addLine(fileMsg);
+
+        for (DownloadNoteInfo dnInfo: fileMessages){
+            inboxStyle.addLine(dnInfo.toString());
         }
         mBuilder.setStyle(inboxStyle);
         Intent resultIntent = new Intent(this, MainActivity.class);
 
-// The stack builder object will contain an artificial back stack for the
-// started Activity.
-// This ensures that navigating backward from the Activity leads out of
-// your application to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-// Adds the back stack for the Intent (but not the Intent itself)
+
         stackBuilder.addParentStack(MainActivity.class);
-// Adds the Intent that starts the Activity to the top of the stack
+
         stackBuilder.addNextIntent(resultIntent);
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(
@@ -175,7 +215,7 @@ public class DownloadService extends RoboIntentService {
         mBuilder.setContentIntent(resultPendingIntent);
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-// mId allows you to update the notification later on.
+
         mNotificationManager.notify(++mId, mBuilder.build());
     }
 }

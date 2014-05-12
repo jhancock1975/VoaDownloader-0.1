@@ -16,4 +16,5 @@
     <string name="ready_again">Ready Again</string>
     <string name="notificationBigContentTitle">CloudReeler Downloads Complete:</string>
     <string name="download_info_intent_key">download info intent key</string>
+    <string name="note_actions_performed">Actions Performed</string>
 </resources>
