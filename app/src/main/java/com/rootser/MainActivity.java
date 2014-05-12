@@ -19,16 +19,13 @@ public class MainActivity extends RoboActivity {
 
     @InjectView(R.id.downloadButton)
     private Button downloadButton;
-    @InjectResource(R.id.main_activity_url_rsrc_bundle_key)
-    private String urlBundleKey;
-    @InjectResource(R.id.main_activity_dest_dir_key)
-    private String destDirNameKey;
-    @InjectResource(R.id.dest_file_key)
-    private String destFileNameKey;
+
     @Inject
-    private DownloadBundleWrapper bundleWrapper;
-    @InjectResource(R.id.main_activity_bundle_name_key)
-    private String bundleNameKey;
+    private DownloadInfo bundleWrapper;
+
+    @InjectResource(R.string.download_info_intent_key)
+    private String downloadInfoIntentKey;
+
     private URLs urls;
     private void setupControls(){
         downloadButton.setOnClickListener(new DownloadButtonClickListener());
@@ -44,10 +41,7 @@ public class MainActivity extends RoboActivity {
 
     public void startIntentService(){
         Intent intent = new Intent(this, DownloadService.class);
-
-        intent.putExtra(urlBundleKey, urls.getUrls());
-        intent.putExtra(destDirNameKey, "/storage/emulated/0/Download");
-        intent.putExtras(bundleWrapper.getBundle());
+        intent.putExtra(downloadInfoIntentKey, bundleWrapper);
         startService(intent);
     }
 

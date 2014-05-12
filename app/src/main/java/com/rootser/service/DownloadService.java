@@ -9,11 +9,11 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.google.inject.Inject;
+import com.rootser.DownloadInfo;
 import com.rootser.DownloadMessage;
 import com.rootser.DownloadStatus;
 import com.rootser.MainActivity;
@@ -39,22 +39,22 @@ public class DownloadService extends RoboIntentService {
     @Inject
     private ConnectivityManager connMgr;
     private NetworkInfo networkInfo;
+
     @Inject
     private DownloadMessage msg;
+
     @InjectResource(R.string.notificationBigContentTitle)
     private String bigContentTitle;
+
     @InjectResource(R.string.app_name)
     private String notificationTitle;
-    @InjectResource(R.id.main_activity_url_rsrc_bundle_key)
-    private String urlBundleKey;
-    @InjectResource(R.id.main_activity_dest_dir_key)
-    private String downloadDestDirKey;
-    @InjectResource(R.id.dest_file_key)
-    private String downloadFileNameKey;
-    @InjectResource(R.id.main_activity_bundle_name_key)
-    private String bundleNameKey;
+
+    @InjectResource(R.string.download_info_intent_key)
+    private String downloadInfoIntentKey;
+
     private ArrayList<String> fileMessages;
-    private final static String DEBUG_TAG = "DownloadWebPageTask";
+    private final static String DEBUG_TAG = DownloadService.class.getName();
+
     public DownloadService() {
         super("DownloadService");
         fileMessages = new ArrayList<String>();
@@ -64,18 +64,16 @@ public class DownloadService extends RoboIntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Bundle bundle = intent.getExtras();
-        String[] urls = bundle.getStringArray(urlBundleKey);
-        String dirName = bundle.getString(downloadDestDirKey);
-        String fileName = bundle.getString(downloadFileNameKey);
+        DownloadInfo downloadInfo = (DownloadInfo)
+                intent.getSerializableExtra(downloadInfoIntentKey);
         synchronized (this) {
-            for (String url : urls) {
+            for (String url : downloadInfo.getUrls().getUrls()) {
                 networkInfo = connMgr.getActiveNetworkInfo();
                 if (networkInfo != null && networkInfo.isConnected()) {
                     try {
                         fileMessages.add(downloadUrl(url,
-                                dirName,
-                                fileName));
+                                downloadInfo.getDestFileDir(),
+                                downloadInfo.getDestFileName()));
                     } catch(IOException e){
                         msg.setStatus(DownloadStatus.IO_EXCEPTION);
                     }
