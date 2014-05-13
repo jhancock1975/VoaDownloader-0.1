@@ -1,16 +1,26 @@
 package com.rootser.service;
 
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
  * Created by john on 5/11/14.
  */
+@DatabaseTable(tableName = "DownloadNoteInfo")
 public class DownloadNoteInfo {
+    @DatabaseField(id=true)
+    private int dowloadNoteInfoId;
+    @DatabaseField
     private String siteName;
+    @DatabaseField
     private String fileName;
+    @DatabaseField
     private long downloadTime;
+    @DatabaseField
     private String status;
 
 
